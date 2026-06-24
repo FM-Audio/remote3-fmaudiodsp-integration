@@ -114,15 +114,19 @@ Button/action command:
 
 Change `PRESET_1` to `PRESET_2`, `PRESET_3`, or `PRESET_4` for the other presets.
 
-## Remote 3 list pagination note
+## Remote 3 list pagination and custom-integration limit
 
-The Remote 3 API defaults some list endpoints to 10 entries per page. If `/api/intg/instances` appears to show only 10 integrations, request a larger page:
+Two separate things are easy to confuse:
+
+1. Some Remote 3 API list endpoints default to 10 entries per page. If `/api/intg/instances` appears to show only 10 integration instances, request a larger page:
 
 ```text
 GET /api/intg/instances?limit=100
 ```
 
-This is a UI/API pagination default, not necessarily a hard integration limit.
+2. Remote 3 custom integration installation has a hard limit of 10 **custom integration drivers**. Built-in/local integrations and activities are a different category. This project consumes exactly one custom-integration slot: `fmaudiodsp`.
+
+For a customer installation that already has 10 custom drivers, one unused custom driver must be removed or functionality must be consolidated. The customer does not need the generic Requests integration for FM-Audio DSP preset switching; this package is the single required FM-Audio DSP integration.
 
 ## Development notes
 

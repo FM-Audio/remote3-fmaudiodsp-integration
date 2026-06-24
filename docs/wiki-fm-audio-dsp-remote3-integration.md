@@ -6,32 +6,33 @@ Diese Integration schaltet FM-Audio-DSP-Presets direkt von der Unfolded Circle R
 
 Es wird keine zusätzliche Requests-Integration, kein externer Server, kein Raspberry Pi, kein Node-RED und keine Home-Assistant-Automation benötigt.
 
-## Warum trotz „10 Integrationen“ keine Integration gelöscht werden muss
+## 10er-Limit: Pagination vs. Custom-Integrationen
 
-Die Remote-3-API gibt bei Listenabfragen standardmäßig nur 10 Einträge zurück. Das wirkt so, als gäbe es ein Limit bei 10 Integrationen.
+Es gibt zwei unterschiedliche Punkte, die leicht verwechselt werden:
 
-Technisch ist das bei der geprüften Installation eine Pagination:
+1. Manche Remote-3-API-Listen sind standardmäßig auf 10 Einträge pro Seite paginiert.
+
+   ```text
+   GET /api/intg/instances
+   ```
+
+   kann deshalb nur 10 Einträge anzeigen. Mit größerem Limit sieht man alle Instanzen:
+
+   ```text
+   GET /api/intg/instances?limit=100
+   ```
+
+2. Für installierte **Custom-Integration-Driver** gibt es ein hartes Limit von 10. Built-in/local Integrationen und Activities sind davon getrennt zu betrachten.
+
+Die FM-Audio-DSP-Integration verbraucht genau **einen** Custom-Integration-Slot:
 
 ```text
-GET /api/intg/instances
+fmaudiodsp
 ```
 
-liefert standardmäßig:
+Auf der Referenzanlage sind nach Installation genau 10 Custom-Driver installiert. Falls eine Kundenanlage bereits 10 Custom-Driver hat, muss dort ein ungenutzter Custom-Driver entfernt oder Funktionalität zusammengelegt werden. Für FM-Audio DSP selbst braucht der Kunde aber nur diese eine eigene Integration; die generische Requests-Integration wird dafür nicht benötigt.
 
-```text
-pagination-limit: 10
-pagination-count: 13
-```
-
-Mit größerem Limit sieht man alle Integrationen:
-
-```text
-GET /api/intg/instances?limit=100
-```
-
-Die FM-Audio-DSP-Integration wurde zusätzlich zu den bestehenden Integrationen installiert und lief anschließend verbunden.
-
-Wichtig: Die vorhandene `requests.main`-Integration wurde nicht gelöscht, weil sie noch von der Activity **Musik Vorraum** referenziert wird.
+Wichtig: Auf der Referenzanlage wurde `requests.main` nicht gelöscht, weil sie noch von der Activity **Musik Vorraum** referenziert wird.
 
 ## Integration
 
