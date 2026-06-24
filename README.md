@@ -1,6 +1,6 @@
 # FM-Audio DSP Remote 3 Integration
 
-Native custom integration for the **Unfolded Circle Remote 3** to switch **FM-Audio DSP** presets directly over Telnet.
+Native custom integration for the **Unfolded Circle Remote 3** to control **FM-Audio DSP / AllDSP** devices directly over Telnet.
 
 The integration runs on the Remote 3 itself. It does **not** require the generic Requests integration, a Raspberry Pi, Home Assistant, Node-RED, or any external bridge server.
 
@@ -8,8 +8,16 @@ The integration runs on the Remote 3 itself. It does **not** require the generic
 
 - One native Remote 3 integration: `FM-Audio DSP`
 - One remote entity with four preset commands by default
-- Configurable DSP IP address, Telnet port, and preset count
-- Preset UI page for Remote 3 touchscreen
+- Configurable preset command count from **2 to 100**
+- Dynamic preset command pattern: `PRESET_N`
+- Automatic preset UI pages for Remote 3 touchscreen
+  - 8 preset buttons per page
+  - 100 presets create 13 preset pages
+- Optional DSP PIN setup for PIN-protected units
+- Safe additional Telnet commands from the AllDSP Telnet instructions:
+  - `STANDBY`
+  - `WAKE`
+  - `LOCATE`
 - Works with activity UI buttons and hard-button mappings
 
 ## Integration IDs
@@ -21,14 +29,26 @@ The integration runs on the Remote 3 itself. It does **not** require the generic
 
 ## Commands
 
-The Remote entity exposes simple commands:
+By default, the Remote entity exposes these preset commands:
 
 - `PRESET_1`
 - `PRESET_2`
 - `PRESET_3`
 - `PRESET_4`
 
-The preset count can be increased up to 16 in setup, but the default customer UI is designed for four Whiteline Four presets.
+During setup, the preset count can be set from **2 to 100**. If set to 100, the entity exposes:
+
+```text
+PRESET_1 ... PRESET_100
+```
+
+The entity also exposes these utility commands:
+
+- `STANDBY` — AllDSP command 4, go to standby
+- `WAKE` — AllDSP command 5, exit standby
+- `LOCATE` — AllDSP command 6, locate/wink
+
+Gain and mute are documented by AllDSP, but are intentionally not added to this release. Preset recall, standby, wake, locate, and optional PIN entry are deterministic one-shot actions; gain/mute need a dedicated UX/state model to avoid unintended customer-side audio changes.
 
 ## DSP Telnet protocol
 
@@ -48,6 +68,29 @@ n3
 v1
 e
 ```
+
+This follows the AllDSP Telnet instructions:
+
+- Select Preset: item `4`, sub-item `4`, value `N`
+- Command: item `3`, sub-item `3`
+- Load preset: command index `1`, value `1`
+
+For PIN-protected units, the optional setup value `DSP PIN code` is sent first:
+
+```text
+c0
+i0
+m5
+n5
+v<PIN>
+e
+```
+
+Utility commands use item `3`, sub-item `3`, value `1` with these indexes:
+
+- `i4` = standby
+- `i5` = wake / exit standby
+- `i6` = locate / wink
 
 A short delay is inserted between commands so the DSP can process the sequence reliably.
 
@@ -70,26 +113,27 @@ npm run build
 The build creates:
 
 ```text
-dist-fmaudiodsp-node-0.1.0.tar.gz
+dist-fmaudiodsp-node-0.2.0.tar.gz
 ```
 
 Current verified release archive:
 
 ```text
-SHA256  6b62b19032667f83959f60ef639402334d379b1f34f835884c44a01e428cbd9f
-Size    68K
+SHA256  e89b30012591b62add8fa0590921591f64908d975a369d0ea669b55430367a02
+Size    72K
 ```
 
 ## Install on Remote 3
 
 1. Open the Remote 3 web configurator.
 2. Go to integrations / custom integrations.
-3. Upload `dist-fmaudiodsp-node-0.1.0.tar.gz`.
+3. Upload `dist-fmaudiodsp-node-0.2.0.tar.gz`.
 4. Add/setup **FM-Audio DSP**.
 5. Enter the DSP connection values:
    - DSP IP address, e.g. `192.168.178.192`
    - Telnet port, usually `23`
-   - preset count, usually `4`
+   - preset count, usually `4`; supported range: `2` to `100`
+   - optional DSP PIN code, only if the unit is PIN-protected
 6. Add/configure the available entity `FM-Audio DSP`.
 
 ## Use in an activity
@@ -112,7 +156,7 @@ Button/action command:
 }
 ```
 
-Change `PRESET_1` to `PRESET_2`, `PRESET_3`, or `PRESET_4` for the other presets.
+Change `PRESET_1` to any configured preset command, for example `PRESET_2`, `PRESET_50`, or `PRESET_100` if that preset count is enabled in setup.
 
 ## Remote 3 list pagination and custom-integration limit
 
@@ -140,11 +184,13 @@ The release package bundles dependencies into a single executable CommonJS `bin/
 
 ## Verification performed on the reference installation
 
-- Driver state: `ACTIVE`
+- Driver version: `0.2.0`
+- Driver state: enabled / active
 - Instance state: `CONNECTED`
+- Live reference instance preset count: `4` because Nils wants only four preset buttons on his own Remote 3
 - Entity enabled: `true`
-- Test commands: `PRESET_1`, `PRESET_2`, `PRESET_3`, `PRESET_4`
-- Remote 3 command response for all four tests: `200 OK`, `Command executed`
-- Driver logs: `Switched FM-Audio DSP to preset 1..4`
+- Exposed simple commands on the reference instance: `PRESET_1`, `PRESET_2`, `PRESET_3`, `PRESET_4`, `STANDBY`, `WAKE`, `LOCATE`
+- Activity **FM-Audio Presets** contains only the four preset buttons `PRESET_1` to `PRESET_4`
+- Driver package has also been locally verified with `presetCount: 100`: 100 preset commands and 13 preset pages are generated
 
 The driver uses conservative Telnet timings and one automatic retry for transient DSP/Telnet timeouts during fast preset changes.

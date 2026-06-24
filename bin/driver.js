@@ -10,12 +10,25 @@ const ENTITY_NAME = { en: "FM-Audio DSP", de: "FM-Audio DSP" };
 const DEFAULT_CONFIG = {
   dspHost: "192.168.178.192",
   dspPort: 23,
+  dspPin: "",
   presetCount: 4,
   timeoutMs: 5000,
   delayMs: 180,
   commandValue: 1,
   retries: 1,
   retryDelayMs: 800
+};
+
+const MIN_PRESETS = 2;
+const MAX_PRESETS = 100;
+const EXTRA_COMMANDS = ["STANDBY", "WAKE", "LOCATE"];
+const ALLDSP_COMMAND_INDEX = 1;
+const ALLDSP_COMMAND_VALUE = 1;
+const ALLDSP_COMMANDS = {
+  LOAD_PRESET: 1,
+  STANDBY: 4,
+  WAKE: 5,
+  LOCATE: 6
 };
 
 function configPath() {
@@ -36,18 +49,24 @@ function loadConfig() {
 
 let config = loadConfig();
 
+function normalizePin(value) {
+  return String(value || "").trim();
+}
+
 function saveConfig(values = {}) {
+  const requestedPresetCount = Number(values.preset_count || values.presetCount || config.presetCount || DEFAULT_CONFIG.presetCount);
   config = {
     ...DEFAULT_CONFIG,
     ...values,
     dspHost: String(values.dsp_host || values.dspHost || config.dspHost || DEFAULT_CONFIG.dspHost),
     dspPort: Number(values.dsp_port || values.dspPort || config.dspPort || DEFAULT_CONFIG.dspPort),
-    presetCount: Math.max(1, Math.min(16, Number(values.preset_count || values.presetCount || config.presetCount || DEFAULT_CONFIG.presetCount)))
+    dspPin: normalizePin(values.dsp_pin || values.dspPin || config.dspPin || DEFAULT_CONFIG.dspPin),
+    presetCount: Math.max(MIN_PRESETS, Math.min(MAX_PRESETS, Number.isFinite(requestedPresetCount) ? requestedPresetCount : DEFAULT_CONFIG.presetCount))
   };
   const p = configPath();
   fs.mkdirSync(path.dirname(p), { recursive: true });
   fs.writeFileSync(p, JSON.stringify(config, null, 2), "utf8");
-  console.log("Saved config", config);
+  console.log("Saved config", { ...config, dspPin: config.dspPin ? "***" : "" });
 }
 
 function sleep(ms) {
@@ -60,11 +79,30 @@ function buildSetValue(item, subitem, value, opts = {}) {
   return [`c${channel}`, `i${index}`, `m${item}`, `n${subitem}`, `v${value}`, "e"];
 }
 
-function buildLoadPreset(preset, commandValue = DEFAULT_CONFIG.commandValue) {
+function buildEnterPin(pin) {
+  const normalized = normalizePin(pin);
+  return normalized ? buildSetValue(5, 5, normalized) : [];
+}
+
+function buildDspCommand(commandNumber) {
+  return buildSetValue(3, 3, ALLDSP_COMMAND_VALUE, { index: commandNumber });
+}
+
+function withOptionalPin(commands, pin = config.dspPin) {
+  return [...buildEnterPin(pin), ...commands];
+}
+
+function buildLoadPreset(preset, commandValue = ALLDSP_COMMAND_VALUE) {
   return [
     ...buildSetValue(4, 4, preset),
-    ...buildSetValue(3, 3, commandValue, { index: 1 })
+    ...buildSetValue(3, 3, commandValue, { index: ALLDSP_COMMANDS.LOAD_PRESET })
   ];
+}
+
+function buildStandaloneCommand(command) {
+  const commandNumber = ALLDSP_COMMANDS[command];
+  if (!commandNumber) throw new Error(`Unsupported DSP command: ${command}`);
+  return buildDspCommand(commandNumber);
 }
 
 function readQuiet(socket, quietMs = 120, maxMs = 800) {
@@ -109,7 +147,7 @@ async function sendTelnetCommands(commands) {
     if (banner.trim()) console.log("DSP banner:", JSON.stringify(banner));
 
     for (const cmd of commands) {
-      console.log(">>>", cmd);
+      console.log(">>>", cmd.startsWith("v") && config.dspPin && cmd === `v${config.dspPin}` ? "v***" : cmd);
       socket.write(`${cmd}\r\n`, "ascii");
       await sleep(config.delayMs);
       const response = await readQuiet(socket, Math.max(100, config.delayMs), Math.max(250, config.delayMs * 2));
@@ -121,18 +159,17 @@ async function sendTelnetCommands(commands) {
   }
 }
 
-async function switchPreset(preset) {
-  const commands = buildLoadPreset(preset, Number(config.commandValue || 1));
+async function runDspCommands(commands, label) {
   const attempts = Math.max(1, Number(config.retries || 0) + 1);
   let lastError;
 
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
-      await sendTelnetCommands(commands);
+      await sendTelnetCommands(withOptionalPin(commands));
       return;
     } catch (err) {
       lastError = err;
-      console.error(`Preset ${preset} attempt ${attempt}/${attempts} failed:`, err);
+      console.error(`${label} attempt ${attempt}/${attempts} failed:`, err);
       if (attempt < attempts) {
         await sleep(Number(config.retryDelayMs || DEFAULT_CONFIG.retryDelayMs));
       }
@@ -142,18 +179,51 @@ async function switchPreset(preset) {
   throw lastError;
 }
 
-function supportedCommands() {
+async function switchPreset(preset) {
+  await runDspCommands(buildLoadPreset(preset, Number(config.commandValue || ALLDSP_COMMAND_VALUE)), `Preset ${preset}`);
+}
+
+async function runExtraCommand(command) {
+  await runDspCommands(buildStandaloneCommand(command), command);
+}
+
+function presetCommands() {
   return Array.from({ length: Number(config.presetCount) }, (_, i) => `PRESET_${i + 1}`);
 }
 
+function supportedCommands() {
+  return [...presetCommands(), ...EXTRA_COMMANDS];
+}
+
 function createUi() {
-  const page = new uc.ui.UiPage("main", "Presets");
-  page.add(uc.ui.createUiText("FM-Audio DSP", 0, 0, undefined, new uc.ui.Size(4, 1)));
-  page.add(uc.ui.createUiText("Preset 1", 0, 1, uc.createRemoteSendCmd("PRESET_1"), new uc.ui.Size(2, 2)));
-  page.add(uc.ui.createUiText("Preset 2", 2, 1, uc.createRemoteSendCmd("PRESET_2"), new uc.ui.Size(2, 2)));
-  page.add(uc.ui.createUiText("Preset 3", 0, 3, uc.createRemoteSendCmd("PRESET_3"), new uc.ui.Size(2, 2)));
-  page.add(uc.ui.createUiText("Preset 4", 2, 3, uc.createRemoteSendCmd("PRESET_4"), new uc.ui.Size(2, 2)));
-  return [page];
+  const pages = [];
+  const presetCount = Number(config.presetCount || DEFAULT_CONFIG.presetCount);
+  const presetsPerPage = 8;
+
+  for (let pageIndex = 0; pageIndex < Math.ceil(presetCount / presetsPerPage); pageIndex += 1) {
+    const startPreset = pageIndex * presetsPerPage + 1;
+    const endPreset = Math.min(startPreset + presetsPerPage - 1, presetCount);
+    const page = new uc.ui.UiPage(`presets_${pageIndex + 1}`, `Presets ${startPreset}-${endPreset}`);
+    page.add(uc.ui.createUiText(`FM-Audio DSP ${startPreset}-${endPreset}`, 0, 0, undefined, new uc.ui.Size(4, 1)));
+
+    for (let preset = startPreset; preset <= endPreset; preset += 1) {
+      const localIndex = preset - startPreset;
+      const x = (localIndex % 2) * 2;
+      const y = 1 + Math.floor(localIndex / 2);
+      page.add(uc.ui.createUiText(`Preset ${preset}`, x, y, uc.createRemoteSendCmd(`PRESET_${preset}`), new uc.ui.Size(2, 1)));
+    }
+
+    pages.push(page);
+  }
+
+  const toolsPage = new uc.ui.UiPage("tools", "DSP Tools");
+  toolsPage.add(uc.ui.createUiText("FM-Audio DSP Tools", 0, 0, undefined, new uc.ui.Size(4, 1)));
+  toolsPage.add(uc.ui.createUiText("Standby", 0, 1, uc.createRemoteSendCmd("STANDBY"), new uc.ui.Size(2, 1)));
+  toolsPage.add(uc.ui.createUiText("Wake", 2, 1, uc.createRemoteSendCmd("WAKE"), new uc.ui.Size(2, 1)));
+  toolsPage.add(uc.ui.createUiText("Locate", 0, 2, uc.createRemoteSendCmd("LOCATE"), new uc.ui.Size(2, 1)));
+  pages.push(toolsPage);
+
+  return pages;
 }
 
 const cmdHandler = async function (entity, cmdId, params = {}) {
@@ -168,12 +238,17 @@ const cmdHandler = async function (entity, cmdId, params = {}) {
       console.error("Unknown command:", command);
       return uc.StatusCodes.BadRequest;
     }
-    const preset = Number(command.replace("PRESET_", ""));
     try {
-      await switchPreset(preset);
-      console.log(`Switched FM-Audio DSP to preset ${preset}`);
+      if (command.startsWith("PRESET_")) {
+        const preset = Number(command.replace("PRESET_", ""));
+        await switchPreset(preset);
+        console.log(`Switched FM-Audio DSP to preset ${preset}`);
+      } else {
+        await runExtraCommand(command);
+        console.log(`Executed FM-Audio DSP command ${command}`);
+      }
     } catch (err) {
-      console.error(`Failed to switch FM-Audio DSP to preset ${preset}:`, err);
+      console.error(`Failed to execute FM-Audio DSP command ${command}:`, err);
       return uc.StatusCodes.ServiceUnavailable;
     }
   }
@@ -218,4 +293,15 @@ driver.on(uc.Events.Disconnect, async () => {
 addEntity();
 driver.init(path.join(__dirname, "driver.json"), driverSetupHandler);
 
-module.exports = { buildLoadPreset };
+module.exports = {
+  ALLDSP_COMMANDS,
+  buildDspCommand,
+  buildEnterPin,
+  buildLoadPreset,
+  buildStandaloneCommand,
+  createUi,
+  presetCommands,
+  supportedCommands,
+  MIN_PRESETS,
+  MAX_PRESETS
+};

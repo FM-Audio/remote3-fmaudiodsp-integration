@@ -1,6 +1,6 @@
 {
   "driver_id": "fmaudiodsp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "release_date": "2026-06-24",
   "min_core_api": "0.24.3",
   "name": {
@@ -61,10 +61,22 @@
         "field": {
           "number": {
             "value": 4,
-            "min": 1,
-            "max": 16,
+            "min": 2,
+            "max": 100,
             "steps": 1,
             "decimals": 0
+          }
+        }
+      },
+      {
+        "id": "dsp_pin",
+        "label": {
+          "en": "DSP PIN code (optional)",
+          "de": "DSP-PIN-Code (optional)"
+        },
+        "field": {
+          "text": {
+            "value": ""
           }
         }
       }
