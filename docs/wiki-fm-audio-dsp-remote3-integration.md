@@ -2,7 +2,7 @@
 
 ## Ziel
 
-Diese Integration steuert FM-Audio-DSP-/AllDSP-Geräte direkt von der Unfolded Circle Remote 3 aus per Telnet. Der Kunde benötigt dafür nur **eine einzelne eigene Integration**: **FM-Audio DSP**.
+Diese Integration steuert FM-Audio-DSP-Geräte direkt von der Unfolded Circle Remote 3 aus per Telnet. Der Kunde benötigt dafür nur **eine einzelne eigene Integration**: **FM-Audio DSP**.
 
 Es wird keine zusätzliche Requests-Integration, kein externer Server, kein Raspberry Pi, kein Node-RED und keine Home-Assistant-Automation benötigt.
 
@@ -71,13 +71,13 @@ Bei höherer Preset-Anzahl werden die Befehle dynamisch nach dem Muster `PRESET_
 PRESET_1 ... PRESET_100
 ```
 
-Zusätzliche sichere DSP-Befehle aus der AllDSP-Telnet-Anleitung:
+Zusätzliche sichere DSP-Telnet-Befehle:
 
 - `STANDBY` — Standby aktivieren
 - `WAKE` — Standby verlassen
 - `LOCATE` — Locate/Wink
 
-Gain und Mute sind in der AllDSP-Telnet-Anleitung ebenfalls beschrieben, werden aber in dieser Version bewusst nicht in die Kundenoberfläche integriert. Preset-Wechsel, Standby, Wake, Locate und optionale PIN-Eingabe sind eindeutige Einzelaktionen. Gain/Mute brauchen dagegen ein eigenes UX-/Statuskonzept, damit keine unbeabsichtigten Audioänderungen entstehen.
+Gain und Mute werden in dieser Version bewusst nicht in die Kundenoberfläche integriert. Preset-Wechsel, Standby, Wake, Locate und optionale PIN-Eingabe sind eindeutige Einzelaktionen. Gain/Mute brauchen dagegen ein eigenes UX-/Statuskonzept, damit keine unbeabsichtigten Audioänderungen entstehen.
 
 ## DSP-Protokoll
 
@@ -98,7 +98,7 @@ v1
 e
 ```
 
-Das entspricht der AllDSP-Telnet-Anleitung:
+Das entspricht der DSP-Telnet-Befehlsfolge:
 
 - Select Preset: Item `4`, Sub-item `4`, Value `N`
 - Command: Item `3`, Sub-item `3`

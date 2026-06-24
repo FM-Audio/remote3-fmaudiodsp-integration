@@ -1,6 +1,6 @@
 # FM-Audio DSP Remote 3 Integration
 
-Native custom integration for the **Unfolded Circle Remote 3** to control **FM-Audio DSP / AllDSP** devices directly over Telnet.
+Native custom integration for the **Unfolded Circle Remote 3** to control **FM-Audio DSP** devices directly over Telnet.
 
 The integration runs on the Remote 3 itself. It does **not** require the generic Requests integration, a Raspberry Pi, Home Assistant, Node-RED, or any external bridge server.
 
@@ -14,7 +14,7 @@ The integration runs on the Remote 3 itself. It does **not** require the generic
   - 8 preset buttons per page
   - 100 presets create 13 preset pages
 - Optional DSP PIN setup for PIN-protected units
-- Safe additional Telnet commands from the AllDSP Telnet instructions:
+- Safe additional DSP Telnet utility commands:
   - `STANDBY`
   - `WAKE`
   - `LOCATE`
@@ -44,11 +44,11 @@ PRESET_1 ... PRESET_100
 
 The entity also exposes these utility commands:
 
-- `STANDBY` — AllDSP command 4, go to standby
-- `WAKE` — AllDSP command 5, exit standby
-- `LOCATE` — AllDSP command 6, locate/wink
+- `STANDBY` — go to standby
+- `WAKE` — exit standby
+- `LOCATE` — locate / wink
 
-Gain and mute are documented by AllDSP, but are intentionally not added to this release. Preset recall, standby, wake, locate, and optional PIN entry are deterministic one-shot actions; gain/mute need a dedicated UX/state model to avoid unintended customer-side audio changes.
+Gain and mute are intentionally not added to this release. Preset recall, standby, wake, locate, and optional PIN entry are deterministic one-shot actions; gain/mute need a dedicated UX/state model to avoid unintended customer-side audio changes.
 
 ## DSP Telnet protocol
 
@@ -69,7 +69,7 @@ v1
 e
 ```
 
-This follows the AllDSP Telnet instructions:
+This follows the DSP Telnet command sequence:
 
 - Select Preset: item `4`, sub-item `4`, value `N`
 - Command: item `3`, sub-item `3`
@@ -119,7 +119,7 @@ dist-fmaudiodsp-node-0.2.0.tar.gz
 Current verified release archive:
 
 ```text
-SHA256  e89b30012591b62add8fa0590921591f64908d975a369d0ea669b55430367a02
+SHA256  0f93bae38931c2e5ae851e3c13bfff78734d86a6a2d23435fa447adb574c8c58
 Size    72K
 ```
 

@@ -22,9 +22,9 @@ const DEFAULT_CONFIG = {
 const MIN_PRESETS = 2;
 const MAX_PRESETS = 100;
 const EXTRA_COMMANDS = ["STANDBY", "WAKE", "LOCATE"];
-const ALLDSP_COMMAND_INDEX = 1;
-const ALLDSP_COMMAND_VALUE = 1;
-const ALLDSP_COMMANDS = {
+const DSP_COMMAND_INDEX = 1;
+const DSP_COMMAND_VALUE = 1;
+const DSP_COMMANDS = {
   LOAD_PRESET: 1,
   STANDBY: 4,
   WAKE: 5,
@@ -85,22 +85,22 @@ function buildEnterPin(pin) {
 }
 
 function buildDspCommand(commandNumber) {
-  return buildSetValue(3, 3, ALLDSP_COMMAND_VALUE, { index: commandNumber });
+  return buildSetValue(3, 3, DSP_COMMAND_VALUE, { index: commandNumber });
 }
 
 function withOptionalPin(commands, pin = config.dspPin) {
   return [...buildEnterPin(pin), ...commands];
 }
 
-function buildLoadPreset(preset, commandValue = ALLDSP_COMMAND_VALUE) {
+function buildLoadPreset(preset, commandValue = DSP_COMMAND_VALUE) {
   return [
     ...buildSetValue(4, 4, preset),
-    ...buildSetValue(3, 3, commandValue, { index: ALLDSP_COMMANDS.LOAD_PRESET })
+    ...buildSetValue(3, 3, commandValue, { index: DSP_COMMANDS.LOAD_PRESET })
   ];
 }
 
 function buildStandaloneCommand(command) {
-  const commandNumber = ALLDSP_COMMANDS[command];
+  const commandNumber = DSP_COMMANDS[command];
   if (!commandNumber) throw new Error(`Unsupported DSP command: ${command}`);
   return buildDspCommand(commandNumber);
 }
@@ -180,7 +180,7 @@ async function runDspCommands(commands, label) {
 }
 
 async function switchPreset(preset) {
-  await runDspCommands(buildLoadPreset(preset, Number(config.commandValue || ALLDSP_COMMAND_VALUE)), `Preset ${preset}`);
+  await runDspCommands(buildLoadPreset(preset, Number(config.commandValue || DSP_COMMAND_VALUE)), `Preset ${preset}`);
 }
 
 async function runExtraCommand(command) {
@@ -294,7 +294,7 @@ addEntity();
 driver.init(path.join(__dirname, "driver.json"), driverSetupHandler);
 
 module.exports = {
-  ALLDSP_COMMANDS,
+  DSP_COMMANDS,
   buildDspCommand,
   buildEnterPin,
   buildLoadPreset,
