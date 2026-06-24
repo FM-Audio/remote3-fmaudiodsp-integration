@@ -187,10 +187,10 @@ The release package bundles dependencies into a single executable CommonJS `bin/
 - Driver version: `0.2.0`
 - Driver state: enabled / active
 - Instance state: `CONNECTED`
-- Live reference instance preset count: `4` because Nils wants only four preset buttons on his own Remote 3
+- Live reference instance preset count: `4` because Nils wants only four preset commands on his own Remote 3
 - Entity enabled: `true`
 - Exposed simple commands on the reference instance: `PRESET_1`, `PRESET_2`, `PRESET_3`, `PRESET_4`, `STANDBY`, `WAKE`, `LOCATE`
-- Activity **FM-Audio Presets** contains only the four preset buttons `PRESET_1` to `PRESET_4`
+- Activity **FM-Audio Presets** contains one page **Presets + Tools** with `PRESET_1` to `PRESET_4`, `STANDBY`, `WAKE`, and `LOCATE`
 - Driver package has also been locally verified with `presetCount: 100`: 100 preset commands and 13 preset pages are generated
 
 The driver uses conservative Telnet timings and one automatic retry for transient DSP/Telnet timeouts during fast preset changes.

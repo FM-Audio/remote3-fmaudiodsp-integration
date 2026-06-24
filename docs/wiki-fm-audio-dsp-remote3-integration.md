@@ -131,7 +131,7 @@ Die Integration erzeugt die Preset-Seiten dynamisch:
 - 4 Presets = 1 Preset-Seite
 - 100 Presets = 13 Preset-Seiten
 
-Die konkrete Kundenoberfläche kann trotzdem weniger Presets anzeigen. Auf Nils' Referenz-Remote bleibt die Activity **FM-Audio Presets** bei vier Preset-Tasten.
+Die konkrete Kundenoberfläche kann trotzdem weniger Presets anzeigen. Auf Nils' Referenz-Remote bleibt die Integration auf vier Presets eingestellt; die Activity **FM-Audio Presets** zeigt zusätzlich die Werkzeugbefehle Standby, Wake und Locate.
 
 ## Activity / Whiteline Four Seite
 
@@ -141,12 +141,15 @@ Die Activity **FM-Audio Presets** nutzt die native Entity:
 fmaudiodsp.main.fmaudiodsp.remote
 ```
 
-Touchscreen-Buttons auf Nils' Referenz-Remote:
+Touchscreen-Buttons auf Nils' Referenz-Remote, Seite **Presets + Tools**:
 
 - Preset 1 → `remote.send_cmd`, Parameter `command=PRESET_1`
 - Preset 2 → `remote.send_cmd`, Parameter `command=PRESET_2`
 - Preset 3 → `remote.send_cmd`, Parameter `command=PRESET_3`
 - Preset 4 → `remote.send_cmd`, Parameter `command=PRESET_4`
+- Standby → `remote.send_cmd`, Parameter `command=STANDBY`
+- Wake → `remote.send_cmd`, Parameter `command=WAKE`
+- Locate → `remote.send_cmd`, Parameter `command=LOCATE`
 
 Hardbutton-Mapping der Activity:
 
@@ -191,7 +194,7 @@ Für weitere Presets entsprechend `PRESET_2`, `PRESET_50` oder `PRESET_100` verw
 - Entity enabled: `true`
 - Entity-Befehle auf der Referenzanlage: `PRESET_1`, `PRESET_2`, `PRESET_3`, `PRESET_4`, `STANDBY`, `WAKE`, `LOCATE`
 - Activity enthält keine alten `requests.main.remote-custom-fm_preset_*` Referenzen mehr.
-- Activity enthält nur vier Preset-Buttons: `PRESET_1` bis `PRESET_4`.
+- Activity-Seite **Presets + Tools** enthält `PRESET_1` bis `PRESET_4` sowie `STANDBY`, `WAKE` und `LOCATE`.
 - Kein `PRESET_5` und kein `PRESET_100` in Nils' Activity-Oberfläche.
 - Whiteline-Four-Profil enthält die Seite **FM-Audio** mit der Activity **FM-Audio Presets**.
 - Lokaler Treibertest mit `presetCount=100`: 100 Preset-Befehle und 13 Preset-Seiten werden generiert.
