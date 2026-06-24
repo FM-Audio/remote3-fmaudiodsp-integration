@@ -1,0 +1,25 @@
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.env.*
+
+# Local Remote-3 backups / generated package staging
+backups/
+pkg/
+pkg-node/
+bin/driver.json
+
+# Generated bundles and release archives
+bin/driver.bundle.js
+dist-*.tar.gz
+
+# Local reference checkouts / large OpenAPI scratch files
+ref-*/
+UCR-core-openapi.yaml
+
+# Legacy prototype files kept out of the customer package
+*.py
+requirements.txt

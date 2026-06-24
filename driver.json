@@ -1,0 +1,73 @@
+{
+  "driver_id": "fmaudiodsp",
+  "version": "0.1.0",
+  "release_date": "2026-06-24",
+  "min_core_api": "0.24.3",
+  "name": {
+    "en": "FM-Audio DSP",
+    "de": "FM-Audio DSP"
+  },
+  "icon": "uc:settings",
+  "description": {
+    "en": "Native Remote 3 integration to switch FM-Audio DSP presets directly via Telnet.",
+    "de": "Native Remote-3-Integration zum direkten Umschalten von FM-Audio-DSP-Presets per Telnet."
+  },
+  "port": 9097,
+  "developer": {
+    "name": "Nils / Hermes Agent",
+    "url": "https://hermes-agent.nousresearch.com"
+  },
+  "home_page": "https://hermes-agent.nousresearch.com",
+  "setup_data_schema": {
+    "title": {
+      "en": "FM-Audio DSP setup",
+      "de": "FM-Audio-DSP-Einrichtung"
+    },
+    "settings": [
+      {
+        "id": "dsp_host",
+        "label": {
+          "en": "DSP IP address",
+          "de": "DSP-IP-Adresse"
+        },
+        "field": {
+          "text": {
+            "value": "192.168.178.192"
+          }
+        }
+      },
+      {
+        "id": "dsp_port",
+        "label": {
+          "en": "DSP Telnet port",
+          "de": "DSP-Telnet-Port"
+        },
+        "field": {
+          "number": {
+            "value": 23,
+            "min": 1,
+            "max": 65535,
+            "steps": 1,
+            "decimals": 0
+          }
+        }
+      },
+      {
+        "id": "preset_count",
+        "label": {
+          "en": "Number of preset commands",
+          "de": "Anzahl Preset-Befehle"
+        },
+        "field": {
+          "number": {
+            "value": 4,
+            "min": 1,
+            "max": 16,
+            "steps": 1,
+            "decimals": 0
+          }
+        }
+      }
+    ]
+  }
+}

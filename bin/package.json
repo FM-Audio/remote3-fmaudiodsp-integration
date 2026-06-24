@@ -1,0 +1,9 @@
+{
+  "name": "fmaudiodsp-remote3-integration",
+  "version": "0.1.0",
+  "description": "FM-Audio DSP preset integration for Unfolded Circle Remote 3",
+  "private": true,
+  "dependencies": {
+    "@unfoldedcircle/integration-api": "^0.4.3-beta"
+  }
+}

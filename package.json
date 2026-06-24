@@ -1,0 +1,26 @@
+{
+  "name": "remote3-fmaudiodsp-integration",
+  "version": "0.1.0",
+  "description": "Native Unfolded Circle Remote 3 custom integration for FM-Audio DSP preset switching via Telnet.",
+  "private": false,
+  "main": "bin/driver.js",
+  "scripts": {
+    "build": "node scripts/build-package.js",
+    "test": "node scripts/test-driver.js"
+  },
+  "keywords": [
+    "unfolded-circle",
+    "remote-3",
+    "fm-audio",
+    "dsp",
+    "telnet"
+  ],
+  "author": "FM-Audio / Nils",
+  "license": "MIT",
+  "dependencies": {
+    "@unfoldedcircle/integration-api": "^0.4.3-beta"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
+  }
+}
